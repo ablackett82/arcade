@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Arcade">
+  <meta name="theme-color" content="#000000">
+  <title>Arcade</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main>
+    <h1>ARCADE</h1>
+    <p id="install" hidden>To put the Arcade on your Home Screen: tap Share, then <b>Add to Home Screen</b>.</p>
+    <nav id="games"></nav>
+    <button id="bring" type="button">Bring scores across</button>
+  </main>
+
+  <dialog id="import">
+    <h2>Bring scores across</h2>
+    <ol>
+      <li>Open the game's old icon on this iPad and tap <b>Copy my scores</b>.</li>
+      <li>Come back here and tap <b>Paste</b>.</li>
+    </ol>
+    <p>Do it once for each old game, then you can delete the old icons. The best score is kept, so doing one twice does no harm.</p>
+    <button id="paste" type="button">Paste</button>
+    <textarea id="code" rows="3" placeholder="…or press and hold here, then Paste"></textarea>
+    <p id="result" role="status"></p>
+    <button id="close" type="button">Done</button>
+  </dialog>
+
+  <script type="module" src="launcher.js"></script>
+  <script>// offline cache; skipped on localhost so the dev server always serves fresh files
+    if ('serviceWorker' in navigator && location.hostname !== 'localhost') addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));</script>
+</body>
+</html>

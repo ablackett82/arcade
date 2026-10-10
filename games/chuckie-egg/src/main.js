@@ -1,0 +1,181 @@
+// Entry point: loads the data, runs the fixed-timestep loop, draws the screen.
+import { newGame, beginPlay, advance, NO_INPUT } from './game/machine.js';
+import { CPU_HZ } from './game/consts.js';
+import { scoreValue } from './game/scoring.js';
+import { Screen, SCREEN_W, SCREEN_H } from './render/screen.js';
+import { Beeper } from './render/audio.js';
+import { Keyboard } from './input/keyboard.js';
+import { Gamepad } from './input/gamepad.js';
+import { Touch } from './input/touch.js';
+
+const STEP_T = 34944;      // fixed simulation quantum: 1/100 s of Z80 time
+const MAX_FRAME_S = 0.1;   // never simulate more than this per animation frame
+const SPEEDS = [1, 0.8, 0.6, 0.4]; // game speed choices (V on the title screen cycles them)
+
+async function loadJSON(url) { const r = await fetch(url); if (!r.ok) throw new Error(`${url}: ${r.status}`); return r.json(); }
+
+async function main() {
+  const [levelsData, gfx, rng] = await Promise.all([loadJSON('data/levels.json'), loadJSON('data/graphics.json'), loadJSON('data/rng.json')]);
+  const levels = levelsData.levels, rom = rng.bytes;
+
+  const canvas = document.getElementById('screen');
+  canvas.width = SCREEN_W; canvas.height = SCREEN_H;
+  const ctx = canvas.getContext('2d', { alpha: false });
+  const image = ctx.createImageData(SCREEN_W, SCREEN_H);
+  const screen = new Screen(gfx);
+  const beeper = new Beeper();
+  const keyboard = new Keyboard();
+  const gamepad = new Gamepad();
+  const touch = new Touch(document.getElementById('touch'));
+  touch.onPanelToggle = (open) => { if (mode === 'game') paused = open; };
+  touch.onCheatToggle = (on) => setCheat(on);
+  touch.onSpeedChange = (v) => setSpeed(v);
+
+  let mode = 'title';
+  let game = null;
+  let highScore = Number(localStorage.getItem('chuckie.highscore') || 0);
+  let paused = false;
+  let cheat = false;
+  try { cheat = localStorage.getItem('chuckie.cheat') === '1'; } catch { /* storage blocked */ }
+  touch.setCheat(cheat);
+  let speed = 1;
+  try { speed = Number(localStorage.getItem('chuckie.speed')) || 1; } catch { /* storage blocked */ }
+  if (!SPEEDS.includes(speed)) speed = 1;
+  setSpeed(speed);
+  let acc = 0, last = performance.now();
+  const input = { ...NO_INPUT };
+
+  function readInput() {
+    for (const k in input) input[k] = false;
+    keyboard.read(input);
+    gamepad.read(input);
+    if (input.left || input.right || input.up || input.down || input.jump) touch.notifyOtherInput();
+    touch.read(input);
+    return input;
+  }
+
+  /** Cheat mode can be switched any time; a game that ever used it never sets the high score. */
+  function setCheat(on) {
+    cheat = on;
+    try { localStorage.setItem('chuckie.cheat', on ? '1' : '0'); } catch { /* storage blocked */ }
+    touch.setCheat(on);
+    if (game) { game.cheats.easy = on; if (on) game.cheated = true; }
+  }
+
+  /** Game speed scales the simulation clock (and the beeper's timing) against real time; a slowed game never sets the high score. */
+  function setSpeed(v) {
+    speed = v;
+    try { localStorage.setItem('chuckie.speed', String(v)); } catch { /* storage blocked */ }
+    touch.setSpeed(v);
+    beeper.speed = v;
+    if (game && v < 1) game.cheated = true;
+  }
+
+  function recordHighScore() {
+    if (!game || game.cheated) return;
+    highScore = Math.max(highScore, scoreValue(game));
+    localStorage.setItem('chuckie.highscore', String(highScore));
+  }
+
+  function startGame() {
+    game = newGame(levels, rom, { easy: cheat });
+    game.cheated = cheat || speed < 1; // cheat or slowed games never set the high score
+    beginPlay(game);
+    mode = 'game';
+    acc = 0;
+    beeper.unlock();
+  }
+
+  function fit() {
+    const stage = document.getElementById('stage');
+    const vw = stage.clientWidth, vh = stage.clientHeight;
+    const scale = Math.max(1, Math.floor(Math.min(vw / SCREEN_W, vh / SCREEN_H)));
+    canvas.style.width = `${SCREEN_W * scale}px`;
+    canvas.style.height = `${SCREEN_H * scale}px`;
+  }
+  window.addEventListener('resize', fit);
+  fit();
+
+  function drawTitle() {
+    screen.drawTextScreen([
+      { text: 'CHUCKIE EGG', row: 4, attr: 0x46 },
+      { text: 'A+F SOFTWARE 1983', row: 6, attr: 0x06 },
+      { text: 'ZX SPECTRUM EDITION', row: 8, attr: 0x05 },
+      { text: `HIGH SCORE ${String(highScore).padStart(6, '0')}`, row: 11, attr: 0x07 },
+      { text: 'ARROWS OR WASD TO MOVE', row: 14, attr: 0x07 },
+      { text: 'SPACE OR Z TO JUMP', row: 15, attr: 0x07 },
+      { text: 'P PAUSE  M MUTE  F FULLSCREEN', row: 16, attr: 0x07 },
+      { text: `CHEAT MODE ${cheat ? 'ON ' : 'OFF'}  ${touch.active ? '(COG)' : '(C)'}`, row: 18, attr: cheat ? 0x46 : 0x05 },
+      { text: `GAME SPEED ${speed}X  ${touch.active ? '(COG)' : '(V)'}`, row: 19, attr: speed === 1 ? 0x05 : 0x46 },
+      { text: touch.active ? 'TAP TO START' : 'PRESS FIRE TO START', row: 20, attr: 0x44 },
+    ]);
+  }
+
+  function frame(now) {
+    const dt = Math.min(MAX_FRAME_S, (now - last) / 1000);
+    last = now;
+    const inp = readInput();
+    const fire = keyboard.consume('Space', 'Enter', 'KeyZ', 'KeyM') || gamepad.anyPressed || touch.consumeStart();
+
+    if (keyboard.consume('KeyP')) { paused = !paused; touch.notifyOtherInput(); }
+    if (keyboard.consume('KeyF')) toggleFullscreen();
+    if (keyboard.consume('KeyM') && mode === 'game') beeper.muted = !beeper.muted;
+
+    if (keyboard.consume('Escape') && mode !== 'title') { recordHighScore(); mode = 'title'; paused = false; keyboard.clearPressed(); } // the only way out of a cheat game
+
+    if (mode === 'title') {
+      if (updateReady) { location.reload(); return; } // never mid-game: wait for the title screen
+      if (keyboard.consume('KeyC')) setCheat(!cheat);
+      if (keyboard.consume('KeyV')) setSpeed(SPEEDS[(SPEEDS.indexOf(speed) + 1) % SPEEDS.length]);
+      if (fire) startGame();
+      drawTitle();
+    } else if (mode === 'game') {
+      if (!paused) {
+        acc += dt * CPU_HZ * speed;
+        while (acc >= STEP_T) { advance(game, STEP_T, () => inp); acc -= STEP_T; }
+        beeper.flush(game.sfx, game.t);
+        for (const e of game.events) {
+          if (e.type === 'gameover') {
+            recordHighScore();
+            mode = 'gameover';
+            gameOverUntil = now + 4000;
+          }
+        }
+        game.events.length = 0;
+      }
+      screen.drawGame(game);
+      if (paused) screen.text('PAUSED', 13, 12, 0x47);
+    } else if (mode === 'gameover') {
+      screen.drawGame(game);
+      screen.text('GAME OVER', 11, 11, 0x47);
+      if (now > gameOverUntil || fire) { mode = 'title'; keyboard.clearPressed(); }
+    }
+
+    image.data.set(screen.toRGBA());
+    ctx.putImageData(image, 0, 0);
+    requestAnimationFrame(frame);
+  }
+  let gameOverUntil = 0;
+
+  // A new build has been installed by the service worker (sw.js activates it at once).
+  // Reload into it from the title screen, so a home-screen app updates on one launch.
+  // No controller at load means a first install, where there is nothing to update.
+  let updateReady = false;
+  const sw = navigator.serviceWorker;
+  if (sw?.controller) sw.addEventListener('controllerchange', () => { updateReady = true; });
+  requestAnimationFrame(frame);
+
+  // unlock audio on the first interaction of any kind
+  for (const ev of ['keydown', 'pointerdown', 'touchstart']) window.addEventListener(ev, () => beeper.unlock(), { once: false, passive: true });
+}
+
+function toggleFullscreen() {
+  const el = document.documentElement;
+  if (!document.fullscreenElement) el.requestFullscreen?.();
+  else document.exitFullscreen?.();
+}
+
+main().catch((err) => {
+  console.error(err);
+  document.body.insertAdjacentHTML('beforeend', `<pre style="color:#f55;padding:1em">${err.stack || err}</pre>`);
+});

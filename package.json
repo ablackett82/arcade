@@ -1,0 +1,14 @@
+{
+  "name": "arcade",
+  "version": "0.1.0",
+  "description": "The arcade games in one home-screen app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "sync": "node tools/sync.mjs",
+    "icons": "node tools/icons.mjs",
+    "dev": "node tools/serve.js",
+    "test": "node --test test/*.test.js"
+  },
+  "license": "UNLICENSED"
+}
