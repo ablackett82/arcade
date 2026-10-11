@@ -1,7 +1,7 @@
 # Arcade
 
-Pac-Man, Kong, Space Invaders, Breakout, Chuckie Egg and Lemmings in one
-home-screen app for the iPad. Plain HTML/JS, no build step; the whole thing is
+Pac-Man, Kong, Space Invaders, Breakout, Chuckie Egg, Lemmings and Asteroids in
+one home-screen app for the iPad. Plain HTML/JS, no build step; the whole thing is
 cached for offline play.
 
 Open the site, then Share → **Add to Home Screen**. Each game has a ⌂ button top
