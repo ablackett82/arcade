@@ -58,13 +58,15 @@ function list(dir, base = dir) {
 
 const versions = {};
 let warnings = 0;
+// check every repo is there before touching games/, so a missing one can't leave it half-deleted
+const missing = GAMES.filter((g) => !fs.existsSync(path.join(SIBLINGS, g.repo, 'index.html')));
+if (missing.length) {
+  for (const g of missing) console.error(`${g.name}: no ${path.join(SIBLINGS, g.repo)} — clone https://github.com/ablackett82/${g.repo === 'donkey-kong' ? 'DK' : g.repo} there`);
+  process.exit(1);
+}
 fs.rmSync(path.join(ROOT, 'games'), { recursive: true, force: true });
 for (const g of GAMES) {
   const src = path.join(SIBLINGS, g.repo);
-  if (!fs.existsSync(path.join(src, 'index.html'))) {
-    console.error(`${g.name}: no ${src} — clone https://github.com/ablackett82/${g.repo === 'donkey-kong' ? 'DK' : g.repo} there`);
-    process.exit(1);
-  }
   const dest = path.join(ROOT, 'games', g.id);
   fs.mkdirSync(dest, { recursive: true });
   for (const item of COPY) if (fs.existsSync(path.join(src, item))) copy(path.join(src, item), path.join(dest, item));
