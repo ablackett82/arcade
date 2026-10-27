@@ -1,11 +1,12 @@
 // Touch controls for iPad. Every finger is tracked on its own (Pointer Events).
-// One half of the screen moves the hedgehog, the other half is the CURL button.
-//
 // Three ways to move, chosen under the cog:
 //   pad   - a fixed d-pad in the bottom corner; hold a direction to keep hopping.
+//           One half of the screen moves, the other half is CURL.
 //   stick - the same, but its centre is wherever the thumb lands.
-//   swipe - swipe a direction for one hop; a plain tap hops forward. Keep the
-//           finger down and swipe again for the next hop.
+//   swipe - swipe a direction for one hop, however long the swipe; a plain tap
+//           hops forward. Keep the finger down and turn to hop another way;
+//           lift it to hop the same way again. Works anywhere but the CURL
+//           button, so it suits a phone held in one hand.
 //
 // Visibility: 'auto' shows the overlay on the first touch and hides it as soon
 // as a keyboard or gamepad is used; 'on' / 'off' force it.
@@ -100,9 +101,12 @@ export class Touch {
 
   down(id, x, y) {
     const g = this.geom;
-    const moveSide = this.settings.swap ? x > g.mid : x < g.mid;
     const layout = this.settings.layout;
-    if (!moveSide) this.pointers.set(id, { kind: 'curl' });
+    // swiping works anywhere but the CURL button; the pads split the screen in half
+    const curl = layout === 'swipe'
+      ? Math.hypot(x - g.curlX, y - g.curlY) <= g.curlR * 1.4
+      : (this.settings.swap ? x < g.mid : x > g.mid);
+    if (curl) this.pointers.set(id, { kind: 'curl' });
     else if (layout === 'swipe') this.pointers.set(id, { kind: 'swipe', sx: x, sy: y, fired: false });
     else {
       const fixed = layout === 'pad';
@@ -118,8 +122,9 @@ export class Touch {
     if (p.kind === 'swipe') {
       const dx = x - p.sx, dy = y - p.sy;
       if (Math.hypot(dx, dy) >= SWIPE) {
-        this.pulses.push(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'));
-        p.sx = x; p.sy = y; p.fired = true;
+        const dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
+        if (dir !== p.dir) this.pulses.push(dir); // a long swipe is still one hop
+        p.sx = x; p.sy = y; p.fired = true; p.dir = dir;
       }
       return;
     }
