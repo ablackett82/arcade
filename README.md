@@ -1,6 +1,7 @@
 # Arcade
 
-Pac-Man, Kong, Space Invaders, Breakout, Chuckie Egg, Lemmings and Asteroids in
+Pac-Man, Kong, Space Invaders, Breakout, Chuckie Egg, Lemmings, Asteroids and
+Hedgehog Crossing (an original, developed in the `frogger` folder) in
 one home-screen app for the iPad. Plain HTML/JS, no build step; the whole thing is
 cached for offline play.
 

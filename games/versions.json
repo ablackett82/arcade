@@ -1,9 +1,10 @@
 {
   "pacman": "6a0ae7f",
   "kong": "c982231",
-  "invaders": "bee8120",
-  "breakout": "a4047a7",
+  "invaders": "4fb6de3",
+  "breakout": "b311a2c",
   "chuckie-egg": "e1da512",
   "lemmings": "0d1dec8",
-  "asteroids": "375b841"
+  "asteroids": "375b841",
+  "hedgehog": "c0b9c2d"
 }
