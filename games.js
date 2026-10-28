@@ -11,5 +11,5 @@ export const GAMES = [
   { id: 'chuckie-egg', name: 'Chuckie Egg',    year: 1983, repo: 'chuckie-egg',    prefix: 'chuckie.' },
   { id: 'lemmings',    name: 'Lemmings',       year: 1991, repo: 'lemmings',       prefix: 'lemmings.' },
   { id: 'asteroids',   name: 'Asteroids',      year: 1979, repo: 'asteroids',      prefix: 'asteroids.' },
-  { id: 'hedgehog',    name: 'Hedgehog Crossing', year: 2026, repo: 'frogger',     prefix: 'hedgehog.' },
+  { id: 'frogger',     name: 'Frogger',        year: 1981, repo: 'frogger',        prefix: 'frogger.' },
 ];
