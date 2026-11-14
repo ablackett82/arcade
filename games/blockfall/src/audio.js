@@ -1,4 +1,4 @@
-// Chiptune-style sound made live with Web Audio. Both tunes are original compositions.
+// Chiptune-style sound made live with Web Audio. Tune 2 is an original composition.
 
 const NOTE = { C: 0, 'C#': 1, D: 2, 'D#': 3, E: 4, F: 5, 'F#': 6, G: 7, 'G#': 8, A: 9, 'A#': 10, B: 11 };
 function freq(n) {
@@ -25,11 +25,12 @@ function bass(roots) {
 }
 
 const TUNES = {
+  // Tune 1 is the Russian folk song "Korobeiniki" (1861, public domain)
   tune1: {
     bpm: 150,
-    lead: seq(`E5:2 C5:1 D5:1 E5:2 A4:2  G4:1 A4:1 C5:2 B4:2 G4:2  A4:2 C5:1 E5:1 D5:2 C5:2  B4:3 G4:1 A4:4
-               F5:2 E5:1 D5:1 C5:2 A4:2  D5:1 E5:1 F5:2 E5:2 C5:2  B4:2 D5:1 B4:1 G4:2 B4:2  A4:6 R:2`),
-    bass: bass(['A', 'E', 'A', 'E', 'F', 'D', 'E', 'A']),
+    lead: seq(`E5:2 B4:1 C5:1 D5:2 C5:1 B4:1  A4:2 A4:1 C5:1 E5:2 D5:1 C5:1  B4:3 C5:1 D5:2 E5:2  C5:2 A4:2 A4:4
+               D5:3 F5:1 A5:2 G5:1 F5:1  E5:3 C5:1 E5:2 D5:1 C5:1  B4:2 B4:1 C5:1 D5:2 E5:2  C5:2 A4:2 A4:4`),
+    bass: bass(['A', 'A', 'E', 'A', 'D', 'C', 'E', 'A']),
   },
   tune2: {
     bpm: 168,
