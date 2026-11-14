@@ -1,5 +1,5 @@
 // Page glue: canvas sizing, keyboard, touch pad, game controller, 60 Hz loop.
-import { Blockfall, BUTTONS } from './game.js';
+import { Tetris, BUTTONS } from './game.js';
 import { Sound } from './audio.js';
 
 const $ = (s) => document.querySelector(s);
@@ -9,7 +9,7 @@ const KEYS = {
 };
 
 const sound = new Sound();
-const game = new Blockfall({ sfx: (n) => sound.sfx(n), music: (n) => sound.music(n) });
+const game = new Tetris({ sfx: (n) => sound.sfx(n), music: (n) => sound.music(n) });
 const screenEl = $('#screen');
 screenEl.appendChild(game.canvas);
 

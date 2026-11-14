@@ -1,7 +1,7 @@
 # Arcade
 
 Pac-Man, Kong, Space Invaders, Breakout, Chuckie Egg, Lemmings, Asteroids and
-Frogger and Blockfall (a falling-block puzzle) in
+Frogger and Tetris in
 one home-screen app for the iPad. Plain HTML/JS, no build step; the whole thing is
 cached for offline play.
 

@@ -1,4 +1,4 @@
-// Blockfall: an original falling-block puzzle game drawn on a 160x144 pixel screen.
+// Tetris: a falling-block puzzle game drawn on a 160x144 pixel screen.
 import DATA from './data.js';
 
 export const W = 160;
@@ -30,7 +30,7 @@ function rotateCells(kind, cells, r) {
 const SHAPES = {};
 for (const k of KINDS) SHAPES[k] = [0, 1, 2, 3].map((r) => rotateCells(k, DATA.pieces[k], r));
 
-export class Blockfall {
+export class Tetris {
   constructor(hooks = {}) {
     this.hooks = hooks; // { sfx(name), music(name|null), onScore(score) }
     this.canvas = document.createElement('canvas');
@@ -59,7 +59,7 @@ export class Blockfall {
 
   loadHigh() {
     try {
-      return JSON.parse(localStorage.getItem('blockfall.highscores')) || { A: [], B: [] };
+      return JSON.parse(localStorage.getItem('tetris.highscores')) || { A: [], B: [] };
     } catch {
       return { A: [], B: [] };
     }
@@ -67,8 +67,8 @@ export class Blockfall {
 
   saveHigh() {
     try {
-      localStorage.setItem('blockfall.highscores', JSON.stringify(this.highScores));
-      localStorage.setItem('blockfall.highscore', String(Math.max(0, ...Object.values(this.highScores).flat()))); // shown on the arcade's front screen
+      localStorage.setItem('tetris.highscores', JSON.stringify(this.highScores));
+      localStorage.setItem('tetris.highscore', String(Math.max(0, ...Object.values(this.highScores).flat()))); // shown on the arcade's front screen
     } catch {}
   }
 
@@ -453,9 +453,9 @@ export class Blockfall {
     // title
     this.rect(14, 18, 132, 38, 3);
     this.rect(16, 20, 128, 34, 0);
-    this.center('BLOCKFALL', 25 + 1, 1, 2);
-    this.center('BLOCKFALL', 25, 3, 2);
-    this.center('AN ORIGINAL PUZZLE', 44, 2);
+    this.center('TETRIS', 25 + 1, 1, 2);
+    this.center('TETRIS', 25, 3, 2);
+    this.center('FALLING BLOCKS', 44, 2);
     // falling demo piece
     const k = KINDS[Math.floor(this.t / 90) % 7];
     const fy = 58 + ((this.t % 90) / 90) * 10;

@@ -56,7 +56,7 @@ function list(dir, base = dir) {
   });
 }
 
-// `npm run sync -- blockfall` syncs just those games (the others are left as they are)
+// `npm run sync -- tetris` syncs just those games (the others are left as they are)
 const only = process.argv.slice(2);
 const todo = only.length ? GAMES.filter((g) => only.includes(g.id)) : GAMES;
 if (only.length && todo.length !== only.length) { console.error(`unknown game id in: ${only.join(' ')}`); process.exit(1); }
