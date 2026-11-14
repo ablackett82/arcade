@@ -15,7 +15,10 @@ screenEl.appendChild(game.canvas);
 
 // whole-number pixel scale keeps the tiles sharp
 function fit() {
-  const w = screenEl.clientWidth, h = screenEl.clientHeight;
+  let w = screenEl.clientWidth;
+  const h = screenEl.clientHeight;
+  // landscape on a touchscreen: the controls sit either side, so leave them room
+  if (document.body.classList.contains('touch') && matchMedia('(orientation: landscape)').matches) w -= 2 * 180;
   const dpr = window.devicePixelRatio || 1;
   let s = Math.min(w / 160, h / 144);
   const dev = Math.floor(s * dpr);
@@ -24,6 +27,7 @@ function fit() {
   game.canvas.style.height = `${Math.floor(144 * s)}px`;
 }
 new ResizeObserver(fit).observe(screenEl);
+addEventListener('resize', fit);
 
 if (navigator.maxTouchPoints > 0 && matchMedia('(pointer: coarse)').matches) document.body.classList.add('touch');
 
@@ -59,7 +63,7 @@ const under = (x, y) => document.elementFromPoint(x, y)?.closest?.('[data-b]')?.
 pad.addEventListener('pointerdown', (e) => {
   e.preventDefault();
   sound.ensure();
-  pad.setPointerCapture?.(e.pointerId);
+  e.target.setPointerCapture?.(e.pointerId);
   fingers.set(e.pointerId, under(e.clientX, e.clientY));
   touchUpdate();
 });
