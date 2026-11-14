@@ -56,16 +56,22 @@ function list(dir, base = dir) {
   });
 }
 
-const versions = {};
+// `npm run sync -- blockfall` syncs just those games (the others are left as they are)
+const only = process.argv.slice(2);
+const todo = only.length ? GAMES.filter((g) => only.includes(g.id)) : GAMES;
+if (only.length && todo.length !== only.length) { console.error(`unknown game id in: ${only.join(' ')}`); process.exit(1); }
+const versionsFile = path.join(ROOT, 'games', 'versions.json');
+const versions = only.length && fs.existsSync(versionsFile) ? JSON.parse(fs.readFileSync(versionsFile, 'utf8')) : {};
 let warnings = 0;
 // check every repo is there before touching games/, so a missing one can't leave it half-deleted
-const missing = GAMES.filter((g) => !fs.existsSync(path.join(SIBLINGS, g.repo, 'index.html')));
+const missing = todo.filter((g) => !fs.existsSync(path.join(SIBLINGS, g.repo, 'index.html')));
 if (missing.length) {
   for (const g of missing) console.error(`${g.name}: no ${path.join(SIBLINGS, g.repo)} — clone https://github.com/ablackett82/${g.repo === 'donkey-kong' ? 'DK' : g.repo} there`);
   process.exit(1);
 }
-fs.rmSync(path.join(ROOT, 'games'), { recursive: true, force: true });
-for (const g of GAMES) {
+if (!only.length) fs.rmSync(path.join(ROOT, 'games'), { recursive: true, force: true });
+for (const g of todo) {
+  if (only.length) fs.rmSync(path.join(ROOT, 'games', g.id), { recursive: true, force: true });
   const src = path.join(SIBLINGS, g.repo);
   const dest = path.join(ROOT, 'games', g.id);
   fs.mkdirSync(dest, { recursive: true });
@@ -83,7 +89,7 @@ for (const g of GAMES) {
   if (notes.length) warnings++;
   console.log(`${g.name.padEnd(15)} ${versions[g.id].padEnd(16)} ${notes.join('; ')}`);
 }
-fs.writeFileSync(path.join(ROOT, 'games', 'versions.json'), JSON.stringify(versions, null, 2) + '\n');
+fs.writeFileSync(versionsFile, JSON.stringify(versions, null, 2) + '\n');
 
 // the service worker: every file, and a version that changes whenever any of them does
 const shell = ['index.html', 'style.css', 'launcher.js', 'games.js', 'scores.js', 'shim.js', 'manifest.webmanifest',

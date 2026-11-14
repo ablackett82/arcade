@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Blockfall">
+  <meta name="theme-color" content="#000000">
+  <title>Blockfall</title>
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="stage">
+    <div id="screen"></div>
+    <div id="pad">
+      <div class="dpad">
+        <button class="k up" data-b="up" aria-label="Up">&#9650;</button>
+        <button class="k left" data-b="left" aria-label="Left">&#9664;</button>
+        <button class="k right" data-b="right" aria-label="Right">&#9654;</button>
+        <button class="k down" data-b="down" aria-label="Down">&#9660;</button>
+      </div>
+      <div class="sys">
+        <button class="k" data-b="select">SELECT</button>
+        <button class="k" data-b="start">START</button>
+      </div>
+      <div class="ab">
+        <button class="k b" data-b="b">B</button>
+        <button class="k a" data-b="a">A</button>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="src/main.js"></script>
+  <script src="../../shim.js"></script>
+</body>
+</html>

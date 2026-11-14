@@ -12,4 +12,5 @@ export const GAMES = [
   { id: 'lemmings',    name: 'Lemmings',       year: 1991, repo: 'lemmings',       prefix: 'lemmings.' },
   { id: 'asteroids',   name: 'Asteroids',      year: 1979, repo: 'asteroids',      prefix: 'asteroids.' },
   { id: 'frogger',     name: 'Frogger',        year: 1981, repo: 'frogger',        prefix: 'frogger.' },
+  { id: 'blockfall',   name: 'Blockfall',      year: 1989, repo: 'blockfall',      prefix: 'blockfall.' },
 ];
